@@ -73,16 +73,19 @@ post_descriptive = post_data_long.groupby('Question')['Response'].agg(['mean', '
 
 # Step 1: Wilcoxon Signed-Rank Test
 p_values = []
-effect_sizes = []
+effect_sizes = {}
+N = len(pre_data_wide)  # Number of participants
 questions = pre_data_wide.columns[1:]  # Assuming same questions in pre and post
 
 for question in questions:  # Exclude participant ID column
 #     stat, p_value = wilcoxon(pre_data_wide[question], post_data_wide[question])
 #     wilcoxon_results.append((question, stat, p_value))
-#for question in questions:
     stat, p = wilcoxon(pre_data_wide[question], post_data_wide[question])
+    Z = wilcoxon.norm.ppf(p)
+    r = Z / np.sqrt(N)
     p_values.append(p)
     # Step 2: Calculate Effect Size
+    effect_sizes[question] = r
     effect_size = stat / len(pre_data_wide[question])**0.5
     effect_sizes.append(effect_size)
 
@@ -150,55 +153,6 @@ for i in range(len(report_df)):
 
 # Save PDF
 pdf.output('survey_analysis_report.pdf')
-
-
-# # Creating a report DataFrame
-# report_df = pd.DataFrame({
-#     'Question': questions,
-#     'P-Value': p_values,
-#     'Effect Size': effect_sizes
-# })
-
-# # Step 3: Reporting Results
-# print(report_df)
-
-# # Step 4: Save Results to PDF
-# pdf = FPDF()
-# pdf.add_page()
-# pdf.set_font('Arial', 'B', 12)
-
-# pdf.cell(0, 10, 'Survey Analysis Report', 0, 1, 'C')
-
-# for i in range(len(report_df)):
-#     line = report_df.iloc[i].to_string()
-#     pdf.cell(0, 10, line, 0, 1)
-
-# # Save the PDF with your results
-# pdf.output('survey_analysis_report.pdf')
-
-# Note: This is a basic PDF report. You can use more advanced libraries like ReportLab for more complex formatting.
-
-
-
-# # Initialize a list to store the test results
-# wilcoxon_results = []
-
-# # Iterate through each question to perform the Wilcoxon signed-rank test
-# for question in pre_data_wide.columns[1:]:  # Exclude participant ID column
-#     stat, p_value = wilcoxon(pre_data_wide[question], post_data_wide[question])
-#     wilcoxon_results.append((question, stat, p_value))
-
-# # Convert the results to a DataFrame
-# wilcoxon_df = pd.DataFrame(wilcoxon_results, columns=['Question', 'Statistic', 'P-Value'])
-
-# # Apply a correction for multiple comparisons if needed
-# # For example, Bonferroni correction
-# alpha = 0.05
-# bonferroni_correction = alpha / len(pre_data_wide.columns[1:])
-# wilcoxon_df['Significant After Correction'] = wilcoxon_df['P-Value'] < bonferroni_correction
-
-# # Display the results
-# #print(wilcoxon_df)
 
 ## Combined visualization
 
